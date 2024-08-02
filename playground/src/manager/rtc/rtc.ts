@@ -1,16 +1,16 @@
 "use client"
 
+import { apiGenAgoraData } from "@/common"
 import protoRoot from "@/protobuf/SttMessage_es6.js"
+import { ITextItem } from "@/types"
 import AgoraRTC, {
   IAgoraRTCClient,
   IMicrophoneAudioTrack,
   IRemoteAudioTrack,
   UID,
 } from "agora-rtc-sdk-ng"
-import { ITextItem } from "@/types"
 import { AGEventEmitter } from "../events"
-import { RtcEvents, IUserTracks } from "./types"
-import { apiGenAgoraData } from "@/common"
+import { IUserTracks, RtcEvents } from "./types"
 
 export class RtcManager extends AGEventEmitter<RtcEvents> {
   private _joined
@@ -40,12 +40,6 @@ export class RtcManager extends AGEventEmitter<RtcEvents> {
 
   async createTracks() {
     try {
-      const videoTrack = await AgoraRTC.createCameraVideoTrack()
-      this.localTracks.videoTrack = videoTrack
-    } catch (err) {
-      console.error("Failed to create video track", err)
-    }
-    try {
       const audioTrack = await AgoraRTC.createMicrophoneAudioTrack()
       this.localTracks.audioTrack = audioTrack
     } catch (err) {
@@ -56,9 +50,7 @@ export class RtcManager extends AGEventEmitter<RtcEvents> {
 
   async publish() {
     const tracks = []
-    if (this.localTracks.videoTrack) {
-      tracks.push(this.localTracks.videoTrack)
-    }
+
     if (this.localTracks.audioTrack) {
       tracks.push(this.localTracks.audioTrack)
     }
@@ -69,7 +61,6 @@ export class RtcManager extends AGEventEmitter<RtcEvents> {
 
   async destroy() {
     this.localTracks?.audioTrack?.close()
-    this.localTracks?.videoTrack?.close()
     if (this._joined) {
       await this.client?.leave()
     }
