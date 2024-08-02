@@ -60,8 +60,11 @@ You will need to uncheck "Use Rosetta for x86_64/amd64 emulation on apple silico
 #### 1. Create manifest.json
 
 ```bash
-# Crate manifest.json from the example
+# Create manifest.json from the example
 cp ./agents/manifest.json.example ./agents/manifest.json
+
+# Create Docker compose file
+cp ./docker-compose.yml.example ./docker-compose.yml
 ```
 
 #### 2. Modify prompts and greetings
@@ -82,60 +85,15 @@ cp ./agents/manifest.json.example ./agents/manifest.json
 ```
 
 #### 4. Create agent in Docker container
-
+Update the docker-compose.yml file with the correct environment variables
 ```bash
 # Pull Docker image and mount the directory in command line
-docker run -itd -v $(pwd):/app -w /app -p 8080:8080 --name astra_agents_dev ghcr.io/rte-design/astra_agents_build
-
-# Windows Git Bash
-# docker run -itd -v //$(pwd):/app -w //app -p 8080:8080 --name astra_agents_dev ghcr.io/rte-design/astra_agents_build
-
-# Enter container
-docker exec -it astra_agents_dev bash
-
-# Create agent
-make build
+docker compose up
 ```
 
-#### 5. Start server
 
 
-```bash
-# Agora App ID and Agora App Certificate
-export AGORA_APP_ID=<your_agora_appid>
-export AGORA_APP_CERTIFICATE=<your_agora_app_certificate>
-
-# OpenAI API key
-export OPENAI_API_KEY=<your_openai_api_key>
-
-# Azure STT key and region
-export AZURE_STT_KEY=<your_azure_stt_key>
-export AZURE_STT_REGION=<your_azure_stt_region>
-
-# Azure TTS key and region
-export AZURE_TTS_KEY=<your_azure_tts_key>
-export AZURE_TTS_REGION=<your_azure_tts_region>
-
-# Run server on port 8080
-make run-server
-```
-
-#### 6. Connect voice agent UI to server
-
-The UI of voice agent is build on Next.js 14, so it needs Node 18 or later.
-
-Open a separate Terminal tab and run the commands:
-
-```bash
-# Create a .env file from example
-cd playground
-cp .env.example .env
-
-# Install dependencies and start dev environment in localhost:3000
-npm install && npm run dev
-```
-
-#### 7. Verify your customized voice agent 🎉
+#### 5. Verify your customized voice agent 🎉
 
 Open `localhost:3000` in your browser, you should be seeing a voice agent just like the Astra, yet with your own customizations.
 
