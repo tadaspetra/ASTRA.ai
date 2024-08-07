@@ -1,4 +1,4 @@
-![ASTRA Banner Image](https://github.com/rte-design/ASTRA.ai/raw/main/images/banner-image-without-tagline.png)
+![Astra Banner Image](https://github.com/rte-design/docs/blob/main/assets/imgs/banner-image-without-tagline.png)
 
 <div align="center">
 
@@ -30,149 +30,113 @@
 
 </div>
 
-## 项目示例 - The voice agent
+<br>
 
-[示例项目](https://theastra.ai)是通过 ASTRA 搭建出来的 voice agent, 展示了多模态，低延迟的能力。
+## Astra
 
-[![展示ASTRA语音助手](https://github.com/rte-design/ASTRA.ai/raw/main/images/astra-voice-agent.gif)](https://theastra.ai)
+[Astra](https://theastra.ai) 是通过 TEN 搭建出来的 voice agent, 展示了多模态，低延迟的能力。
+
+[![Showcase Astra](https://github.com/rte-design/docs/blob/main/assets/gifs/astra-voice-agent.gif?raw=true)](https://theastra.ai)
 
 <br>
-<h2>如何在本地搭建 voice agent</h2>
+<h2>如何用搭建的 graph designer 配置 voice agent</h2>
 
-#### 先决条件
-
+### 先决条件
+#### Keys 
 - Agora App ID 和 App Certificate（[点击此处了解详情](https://docs.agora.io/en/video-calling/get-started/manage-agora-account?platform=web)）
-- Azure 的 [STT](https://azure.microsoft.com/en-us/products/ai-services/speech-to-text) 和 [TTS](https://azure.microsoft.com/en-us/products/ai-services/text-to-speech) API 密钥
-- [OpenAI](https://openai.com/index/openai-api/) API 密钥
-- [Docker](https://www.docker.com/)
+- Azure 的 [STT](https://azure.microsoft.com/en-us/products/ai-services/speech-to-text) 和 [TTS](https://azure.microsoft.com/en-us/products/ai-services/text-to-speech) API Keys
+- [OpenAI](https://openai.com/index/openai-api/) API Key
+#### 下载安装
+- [Docker](https://www.docker.com/)	和 [Docker Compose](https://docs.docker.com/compose/install/)
+- [Node.js(LTS) v18](https://nodejs.org/en)
+#### 机器配置
+- CPU >= 2 Core
+- RAM >= 4 GB
 
-#### Apple Silicon 上的 Docker 设置
-如果您使用的是 Apple Silicon，您需要取消勾选 Docker 的 "Use Rosetta for x86_64/amd64 emulation on apple silicon" 选项，否则服务器将无法正常工作。
+#### Apple Silicon 上 Docker 设置
+如果您使用的是 Apple Silicon Mac，您需要取消勾选 Docker 的 "Use Rosetta for x86_64/amd64 emulation on Apple Silicon" 选项，否则服务器将无法正常工作。
 
 <div align="center">
 
-![ASTRA Docker Setting](https://github.com/rte-design/ASTRA.ai/raw/main/images/docker-setting.gif)
+![Docker Setting](https://github.com/rte-design/docs/blob/main/assets/gifs/docker-setting.gif?raw=true)
 
 </div>
 
 #### 设置 Go 国内代理
 如果在国内，我们建议跑下列命令来全局设定国内代理以便快速下载依赖([了解详情](https://goproxy.cn/))。
 
-```
-$ go env -w GO111MODULE=on
-$ go env -w GOPROXY=https://goproxy.cn,direct
-```
-
-#### 1.创建 manifest 配置文件
-从示例文件创建 `manifest.json`：
-
 ```bash
-cp ./agents/manifest.json.example ./agents/manifest.json
+ export GOPROXY=https://goproxy.cn 
 ```
 
-#### 2. 基本配置
-
-在 `manifest.json` 里面找到下列属性替换：
-```json
-"app_id": "<agora_appid>"
-"api_key": "<openai_api_key>"
-"agora_asr_vendor_key": "<azure_stt_key>"
-"agora_asr_vendor_region": "<azure_stt_region>"
-"azure_subscription_key": "<azure_tts_key>"
-"azure_subscription_region": "<azure_tts_region>"
-```
-
-#### 3. 定制化
-在 `manifest.json` 可以直接改 propmt 和问候语：
-```json
-"property": {
-    "base_url": "",
-    "api_key": "<openai_api_key>",
-    "frequency_penalty": 0.9,
-    "model": "gpt-3.5-turbo",
-    "max_tokens": 512,
-    "prompt": "",
-    "proxy_url": "",
-    "greeting": "ASTRA agent connected. How can i help you today?",
-    "max_memory_length": 10
-}
-```
-
-#### 4. 在 Docker 容器中构建 agent
-
-打开 Terminal， 跑下列命令：
-
+### 下一步
+#### 1. 准备设置文件
+Clone 项目后，在根目录下跑下面的命创建 `property.json` 和 `.env`:
 ```bash
-# 拉取带有开发工具的 Docker 镜像，并将当前文件夹挂载为工作区
-docker run -itd -v $(pwd):/app -w /app -p 8080:8080 --name astra_agents_dev ghcr.io/rte-design/astra_agents_build
+# 创建 .env 文件
+cp ./.env.example ./.env
 
-# 对于 Windows Git Bash
-# docker run -itd -v //$(pwd):/app -w //app -p 8080:8080 --name astra_agents_dev ghcr.io/rte-design/astra_agents_build
+# 创建 property.json 文件
+cp ./agents/property.json.example ./agents/property.json
+```
 
-# 进入 Docker 容器
+#### 2. 绑定积木的 keys 
+打开 `.env` 文件，绑定对应的积木 keys，这里可以通过配置不同的 keys 选用不用的积木：
+```
+# Agora App ID and Agora App Certificate
+AGORA_APP_ID=
+AGORA_APP_CERTIFICATE=
+
+# Extension: agora_rtc
+# Azure STT key and region
+AZURE_STT_KEY=
+AZURE_STT_REGION=
+
+# Extension: azure_tts
+# Azure TTS key and region
+AZURE_TTS_KEY=
+AZURE_TTS_REGION=
+
+# Extension: openai_chatgpt
+# OpenAI API key
+OPENAI_API_KEY=
+```
+
+#### 3. 开启 Docker 容器
+在同一个目录下，通过 Docker 镜像构建 Docker 容器：
+```bash
+# 开启 Docker 容器：
+docker compose up
+```
+
+#### 4. 构建 Agent 并开启服务
+再打开一个 Terminal 窗口，通过下面的命令进入 Docker 容器，创建并开启服务：
+```bash
+#  进入容器创建 Agent
 docker exec -it astra_agents_dev bash
-
-# 在容器里构建 agent
 make build
-```
 
-#### 5. 启动本地服务器
-
-在容器里启动本地服务器, 端口是 8080：
-```bash
-# 端口 8080
+# 端口 8080 开启服务
 make run-server
 ```
 
-#### 6. 运行 voice agent 界面
+#### 5. 验证 voice agent 和 graph designer 🎉
 
-Voice agent 界面是基于 NextJS 14 构建的，因此需要 Node 18 或更高版本。
+现在可以打开浏览器 `http://localhost:3000` 体验 voice agent，同时可以再开浏览器的一个窗口 `http://localhost:3001` 用 graph designer 定制 voice agent。
 
-同时，再打开一个 Terminal 窗口， 通过下列命令创建环境文件并跑起界面。
+#### Graph designer
 
-```bash
-# 创建一个本地的环境文件
-cd playground
-cp .env.example .env
+TEN Graph Designer (beta)，通过简单拖拽和动态节点连接轻松实现多模型配置。
 
-# 安装依赖并开启界面
-npm install && npm run dev
-```
-
-#### 7. 验证您定制的 voice agent 🎉
-
-在浏览器中打开 `localhost:3000`，您应该能够看到一个与示例项目一样的 voice angent，但是这次是带有定制的 voice agent。
+![TEN Graph Designer](https://github.com/rte-design/docs/blob/main/assets/gifs/graph-designer.gif?raw=true)
 
 <br>
-<h2>Voice agent 架构</h2>
-要进一步探索， voice agent 是一个绝佳的起点。它包含以下扩展功能，其中一些将在不久的将来可以互换使用。请随意选择最适合您需求并最大化 ASTRA 功能的扩展。
-
-| 扩展功能            | 特点           | 描述                                                                                                                                                                                                             |
-| ------------------ | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| openai_chatgpt     | 语言模型            | [ GPT-4o ](https://platform.openai.com/docs/models/gpt-4o), [ GPT-4 Turbo ](https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4), [ GPT-3.5 Turbo ](https://platform.openai.com/docs/models/gpt-3-5-turbo) |
-| elevenlabs_tts     | 文本转语音 | [ElevanLabs 文本转语音](https://elevenlabs.io/) 将文本转换为音频                                                                                                                                              |
-| azure_tts          | 文本转语音 | [Azure 文本转语音](https://azure.microsoft.com/en-us/products/ai-services/text-to-speech) 将文本转换为音频                                                                                                 |
-| azure_stt          | 语音转文本 | [Azure 语音转文本](https://azure.microsoft.com/en-us/products/ai-services/speech-to-text) 将音频转换为文本                                                                                                 |
-| chat_transcriber   | 转录工具    | 将聊天记录转发到频道的实用工具                                                                                                                                                                      |
-| agora_rtc          | 传输工具    | 由 agora_rtc 提供支持的低延迟传输工具                                                                                                                                                                       |
-| interrupt_detector | 中断工具    | 帮助中断语音助手的实用工具                                                                                                                                                                                |
-
-<h3>Voice agent 架构图</h3>
-
-![ASTRAvoice agent架构图](../../images/image-2.png)
-
-
-<br>
-<h2>ASTRA 服务</h2>
-
-现在您已经创建了第一个 AI voice agent，创意并不会止步于此。 要开发更多的 AI agents， 您需要深入了解 ASTRA 的工作原理。请参阅 [ ASTRA 架构文档 ](./docs/astra-architecture.md)。
-
-<br />
 <h2>点星收藏</h2>
 
 我们更新频繁，不想错过的话，请给我们的 repo 点星，以便获得第一时间的更新.
 
-![ASTRA star us gif](https://github.com/rte-design/ASTRA.ai/raw/main/images/star-the-repo-confetti-higher-quality.gif)
+![TEN star us gif](https://github.com/rte-design/docs/blob/main/assets/gifs/star-the-repo-confetti-higher-quality.gif?raw=true)
+
 
 
 <br>
@@ -184,20 +148,17 @@ npm install && npm run dev
 - [GitHub Issues](https://github.com/rte-design/astra.ai/issues)：最适合报告错误和提出新功能。有关更多详细信息，请参阅我们的[贡献指南](./docs/code-of-conduct/contributing.md)。
 - [X（以前的Twitter）](https://twitter.com/intent/follow?screen_name=AstraFramework)：非常适合分享您的代理并与社区互动。
 
- <br>
+<br>
  <h2>代码贡献者</h2>
 
 [![ASTRA](https://contrib.rocks/image?repo=rte-design/astra.ai)](https://github.com/rte-design/astra.ai/graphs/contributors)
 
-
-</br>
-
+<br>
 <h2>欢迎贡献</h2>
 
 欢迎贡献！请先阅读 [贡献指南](../code-of-conduct/contributing.md)。
 
-</br>
-
+<br>
 <h2>许可证授权</h2>
 
 本项目使用 Apache 2.0 许可证授权 - 详细信息请参阅 [LICENSE](LICENSE)。

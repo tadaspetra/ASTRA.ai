@@ -11,15 +11,12 @@ import threading
 import time
 
 from rte import (
-    Addon,
     Extension,
-    register_addon_as_extension,
     RteEnv,
     Cmd,
     CmdResult,
     StatusCode,
     Data,
-    MetadataInfo,
 )
 from .elevenlabs_tts import default_elevenlabs_tts_config, ElevenlabsTTS
 from .pcm import PcmConfig, Pcm
@@ -47,10 +44,8 @@ class Message:
 
 
 class ElevenlabsTTSExtension(Extension):
-    def on_init(
-        self, rte: RteEnv, manifest: MetadataInfo, property: MetadataInfo
-    ) -> None:
-        logger.info("on_init")
+    def on_start(self, rte: RteEnv) -> None:
+        logger.info("on_start")
 
         self.elevenlabs_tts = None
         self.outdate_ts = 0
@@ -58,20 +53,13 @@ class ElevenlabsTTSExtension(Extension):
         self.pcm_frame_size = 0
         self.text_queue = queue.Queue(maxsize=1024)
 
-        rte.on_init_done(manifest, property)
-
-    def on_start(self, rte: RteEnv) -> None:
-        logger.info("on_start")
-
         # prepare configuration
         elevenlabs_tts_config = default_elevenlabs_tts_config()
 
         try:
             elevenlabs_tts_config.api_key = rte.get_property_string(PROPERTY_API_KEY)
         except Exception as e:
-            logger.warning(
-                f"on_start get_property_string {PROPERTY_API_KEY} error: {e}"
-            )
+            logger.warning(f"on_start get_property_string {PROPERTY_API_KEY} error: {e}")
             return
 
         try:
@@ -79,58 +67,36 @@ class ElevenlabsTTSExtension(Extension):
             if len(model_id) > 0:
                 elevenlabs_tts_config.model_id = model_id
         except Exception as e:
-            logger.warning(
-                f"on_start get_property_string {PROPERTY_MODEL_ID} error: {e}"
-            )
+            logger.warning(f"on_start get_property_string {PROPERTY_MODEL_ID} error: {e}")
 
         try:
-            optimize_streaming_latency = rte.get_property_int(
-                PROPERTY_OPTIMIZE_STREAMING_LATENCY
-            )
+            optimize_streaming_latency = rte.get_property_int(PROPERTY_OPTIMIZE_STREAMING_LATENCY)
             if optimize_streaming_latency > 0:
-                elevenlabs_tts_config.optimize_streaming_latency = (
-                    optimize_streaming_latency
-                )
+                elevenlabs_tts_config.optimize_streaming_latency = optimize_streaming_latency
         except Exception as e:
-            logger.warning(
-                f"on_start get_property_int {PROPERTY_OPTIMIZE_STREAMING_LATENCY} error: {e}"
-            )
+            logger.warning(f"on_start get_property_int {PROPERTY_OPTIMIZE_STREAMING_LATENCY} error: {e}")
 
         try:
-            request_timeout_seconds = rte.get_property_int(
-                PROPERTY_REQUEST_TIMEOUT_SECONDS
-            )
+            request_timeout_seconds = rte.get_property_int(PROPERTY_REQUEST_TIMEOUT_SECONDS)
             if request_timeout_seconds > 0:
                 elevenlabs_tts_config.request_timeout_seconds = request_timeout_seconds
         except Exception as e:
-            logger.warning(
-                f"on_start get_property_int {PROPERTY_REQUEST_TIMEOUT_SECONDS} error: {e}"
-            )
+            logger.warning(f"on_start get_property_int {PROPERTY_REQUEST_TIMEOUT_SECONDS} error: {e}")
 
         try:
-            elevenlabs_tts_config.similarity_boost = rte.get_property_float(
-                PROPERTY_SIMILARITY_BOOST
-            )
+            elevenlabs_tts_config.similarity_boost = rte.get_property_float(PROPERTY_SIMILARITY_BOOST)
         except Exception as e:
-            logger.warning(
-                f"on_start get_property_float {PROPERTY_SIMILARITY_BOOST} error: {e}"
-            )
+            logger.warning(f"on_start get_property_float {PROPERTY_SIMILARITY_BOOST} error: {e}")
 
         try:
-            elevenlabs_tts_config.speaker_boost = rte.get_property_bool(
-                PROPERTY_SPEAKER_BOOST
-            )
+            elevenlabs_tts_config.speaker_boost = rte.get_property_bool(PROPERTY_SPEAKER_BOOST)
         except Exception as e:
-            logger.warning(
-                f"on_start get_property_bool {PROPERTY_SPEAKER_BOOST} error: {e}"
-            )
+            logger.warning(f"on_start get_property_bool {PROPERTY_SPEAKER_BOOST} error: {e}")
 
         try:
             elevenlabs_tts_config.stability = rte.get_property_float(PROPERTY_STABILITY)
         except Exception as e:
-            logger.warning(
-                f"on_start get_property_float {PROPERTY_STABILITY} error: {e}"
-            )
+            logger.warning(f"on_start get_property_float {PROPERTY_STABILITY} error: {e}")
 
         try:
             elevenlabs_tts_config.style = rte.get_property_float(PROPERTY_STYLE)
@@ -140,9 +106,7 @@ class ElevenlabsTTSExtension(Extension):
         # create elevenlabsTTS instance
         self.elevenlabs_tts = ElevenlabsTTS(elevenlabs_tts_config)
 
-        logger.info(
-            f"ElevenlabsTTS succeed with model_id: {self.elevenlabs_tts.config.model_id}, VoiceId: {self.elevenlabs_tts.config.voice_id}"
-        )
+        logger.info(f"ElevenlabsTTS succeed with model_id: {self.elevenlabs_tts.config.model_id}, VoiceId: {self.elevenlabs_tts.config.voice_id}")
 
         # create pcm instance
         self.pcm = Pcm(PcmConfig())
@@ -155,10 +119,6 @@ class ElevenlabsTTSExtension(Extension):
     def on_stop(self, rte: RteEnv) -> None:
         logger.info("on_stop")
         rte.on_stop_done()
-
-    def on_deinit(self, rte: RteEnv) -> None:
-        logger.info("on_deinit")
-        rte.on_deinit_done()
 
     def on_cmd(self, rte: RteEnv, cmd: Cmd) -> None:
         """
@@ -197,9 +157,7 @@ class ElevenlabsTTSExtension(Extension):
         try:
             text = data.get_property_string(DATA_IN_TEXT_DATA_PROPERTY_TEXT)
         except Exception as e:
-            logger.warning(
-                f"on_data get_property_string {DATA_IN_TEXT_DATA_PROPERTY_TEXT} error: {e}"
-            )
+            logger.warning(f"on_data get_property_string {DATA_IN_TEXT_DATA_PROPERTY_TEXT} error: {e}")
             return
 
         if len(text) == 0:
@@ -218,9 +176,7 @@ class ElevenlabsTTSExtension(Extension):
             logger.debug(f"process_text_queue, text: [{msg.text}]")
 
             if msg.received_ts < self.outdate_ts:
-                logger.info(
-                    f"textChan interrupt and flushing for input text: [{msg.text}], received_ts: {msg.received_ts}, outdate_ts: {self.outdate_ts}"
-                )
+                logger.info(f"textChan interrupt and flushing for input text: [{msg.text}], received_ts: {msg.received_ts}, outdate_ts: {self.outdate_ts}")
                 continue
 
             start_time = time.time()
@@ -235,9 +191,7 @@ class ElevenlabsTTSExtension(Extension):
 
             for chunk in self.pcm.read_pcm_stream(audio_stream, self.pcm_frame_size):
                 if msg.received_ts < self.outdate_ts:
-                    logger.info(
-                        f"textChan interrupt and flushing for input text: [{msg.text}], received_ts: {msg.received_ts}, outdate_ts: {self.outdate_ts}"
-                    )
+                    logger.info(f"textChan interrupt and flushing for input text: [{msg.text}], received_ts: {msg.received_ts}, outdate_ts: {self.outdate_ts}")
                     break
 
                 if not chunk:
@@ -249,9 +203,7 @@ class ElevenlabsTTSExtension(Extension):
                 pcm_frame_read += n
 
                 if pcm_frame_read != self.pcm.get_pcm_frame_size():
-                    logger.debug(
-                        f"the number of bytes read is [{pcm_frame_read}] inconsistent with pcm frame size",
-                    )
+                    logger.debug(f"the number of bytes read is [{pcm_frame_read}] inconsistent with pcm frame size")
                     continue
 
                 self.pcm.send(rte, buf)
@@ -261,38 +213,16 @@ class ElevenlabsTTSExtension(Extension):
 
                 if first_frame_latency == 0:
                     first_frame_latency = int((time.time() - start_time) * 1000)
-                    logger.info(
-                        f"first frame available for text: [{msg.text}], received_ts: {msg.received_ts}, first_frame_latency: {first_frame_latency}ms",
-                    )
+                    logger.info(f"first frame available for text: [{msg.text}], received_ts: {msg.received_ts}, first_frame_latency: {first_frame_latency}ms")
 
                 logger.debug(f"sending pcm data, text: [{msg.text}]")
 
             if pcm_frame_read > 0:
                 self.pcm.send(rte, buf)
                 sent_frames += 1
-                logger.info(
-                    f"sending pcm remain data, text: [{msg.text}], pcm_frame_read: {pcm_frame_read}"
-                )
+                logger.info(f"sending pcm remain data, text: [{msg.text}], pcm_frame_read: {pcm_frame_read}")
 
             finish_latency = int((time.time() - start_time) * 1000)
-            logger.info(
-                f"send pcm data finished, text: [{msg.text}], received_ts: {msg.received_ts}, read_bytes: {read_bytes}, sent_frames: {sent_frames}, \
+            logger.info(f"send pcm data finished, text: [{msg.text}], received_ts: {msg.received_ts}, read_bytes: {read_bytes}, sent_frames: {sent_frames},
                 first_frame_latency: {first_frame_latency}ms, finish_latency: {finish_latency}ms"
             )
-
-
-@register_addon_as_extension("elevenlabs_tts_python")
-class ElevenlabsTTSExtensionAddon(Addon):
-    def on_init(self, rte: RteEnv, manifest, property) -> None:
-        logger.info("on_init")
-        rte.on_init_done(manifest, property)
-        return
-
-    def on_create_instance(self, rte: RteEnv, addon_name: str, context) -> None:
-        logger.info("on_create_instance")
-        rte.on_create_instance_done(ElevenlabsTTSExtension(addon_name), context)
-
-    def on_deinit(self, rte: RteEnv) -> None:
-        logger.info("on_deinit")
-        rte.on_deinit_done()
-        return
