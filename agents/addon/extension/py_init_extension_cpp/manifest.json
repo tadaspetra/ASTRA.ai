@@ -1,0 +1,26 @@
+{
+  "type": "extension",
+  "name": "py_init_extension_cpp",
+  "version": "0.3.1",
+  "language": "cpp",
+  "dependencies": [
+    {
+      "type": "system",
+      "name": "rte_runtime",
+      "version": "0.3.1"
+    },
+    {
+      "type": "system",
+      "name": "rte_runtime_python",
+      "version": "0.3.1"
+    }
+  ],
+  "publish": {
+    "include": [
+      "manifest.json",
+      "property.json",
+      "lib/**"
+    ]
+  },
+  "api": {}
+}
